@@ -1,26 +1,50 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { User } from './entities/user.entity';
+import { Repository } from 'typeorm';
+import { DUPLICATE_EMAIL, PASSWORD_NOT_MATCH } from './const/users-error-message';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UserService {
-  create(createUserDto: CreateUserDto) {
-    return 'This action adds a new user';
-  }
+    constructor(
+        @InjectRepository(User)
+        private readonly userRepository: Repository<User>,
+    ) {}
 
-  findAll() {
-    return `This action returns all user`;
-  }
+    // 회원가입
+    async create(createUserDto: CreateUserDto) {
+        const { email, password, nickname, passwordConfirm } = createUserDto;
+        const existedUser = await this.findByEmail(email);
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
-  }
+        if (existedUser) {
+            throw new BadRequestException(DUPLICATE_EMAIL);
+        }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
-  }
+        if (password !== passwordConfirm) {
+            throw new BadRequestException(PASSWORD_NOT_MATCH);
+        }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
-  }
+        const hashedPassword = await bcrypt.hash(password, +process.env.BCRYPT_SALT_ROUND);
+
+        const newUser = await this.userRepository.save({
+            email,
+            password: hashedPassword,
+            nickname,
+        });
+
+        return newUser;
+    }
+
+    // email로 유저 찾기 (id와 email 추출 )
+    findByEmail(email: string): Promise<{ id: number, email: string, password: string } | null> {
+        return this.userRepository.findOne({
+            select: ['id', 'email', 'password'], // 문자열 배열로 지정
+            where: {
+                email,
+            },
+        });
+    }
 }
