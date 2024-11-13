@@ -5,6 +5,7 @@ import { UserModule } from 'src/user/user.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from 'src/user/entities/user.entity';
 import { BasicTokenGuard } from './guard/basic.guard';
+import { BearerTokenGuard } from './guard/bearer.guard';
 
 @Module({
   imports: [
@@ -12,7 +13,7 @@ import { BasicTokenGuard } from './guard/basic.guard';
     TypeOrmModule.forFeature([User]),
   ],
   controllers: [AuthController],
-  providers: [AuthService, BasicTokenGuard],
-  exports: [AuthService, BasicTokenGuard]
+  providers: [AuthService, BasicTokenGuard, BearerTokenGuard],
+  exports: [AuthService, BasicTokenGuard, BearerTokenGuard]
 })
 export class AuthModule {}

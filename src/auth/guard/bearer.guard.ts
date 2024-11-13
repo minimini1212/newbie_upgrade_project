@@ -3,7 +3,7 @@ import { AuthService } from '../auth.service';
 import { INVALID_TOKEN } from '../const/auth.excption-message';
 
 @Injectable()
-export class BearerGuard implements CanActivate {
+export class BearerTokenGuard implements CanActivate {
     constructor(private readonly authService: AuthService) {}
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -17,13 +17,11 @@ export class BearerGuard implements CanActivate {
         }
         const token = await this.authService.extractToken(rawToken, false);
 
-        const { email, password } = this.authService.decodeBasicToken(token);
-
-        const user = await this.authService.authenticate({
-            email,
-            password,
-        });
-        req.user = user;
+        const result = await this.authService.verifyToken(token);
+        
+        req.token = token;
+        req.tokenType = result.type;
+        req.userId = result.id;
 
         return true;
     }
