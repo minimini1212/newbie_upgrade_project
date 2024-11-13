@@ -1,4 +1,5 @@
 import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
+import { Post } from 'src/post/entities/post.entity';
 import {
     Column,
     CreateDateColumn,
@@ -64,8 +65,8 @@ export class User {
     // @OneToMany(() => CommentLike, (commentLike) => commentLike.user)
     // commentLikes: CommentLike[];
 
-    // @OneToMany(() => Post, (post) => post.user)
-    // posts: Post[];
+    @OneToMany(() => Post, (post) => post.user)
+    posts: Post[];
 
     // @OneToMany((type) => PostLike, (postLike) => postLike.user)
     // postLikes: PostLike[];
