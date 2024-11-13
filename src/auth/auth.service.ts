@@ -36,7 +36,7 @@ export class AuthService {
     }
     
 
-    // 유저검증
+    // 유저검증 -> basicGuard 사용안함
     async authenticate(loginUserDto: logInUserDto) {
         console.log(loginUserDto, '---------------------');
         const existingUser = await this.userService.findByEmail(loginUserDto.email);
