@@ -19,7 +19,6 @@ export class AuthService {
         private readonly jwtService: JwtService,
     ) {}
 
-   
     // 로그인
     async signIn(loginUserDto: logInUserDto) {
         const existingUser = await this.authenticate(loginUserDto);
@@ -34,7 +33,6 @@ export class AuthService {
             refreshToken: this.signToken(user, true),
         };
     }
-    
 
     // 유저검증 -> basicGuard 사용안함
     async authenticate(loginUserDto: logInUserDto) {
@@ -45,13 +43,16 @@ export class AuthService {
             throw new UnauthorizedException(EMPTY_USER);
         }
         console.log(existingUser);
-        const comparingPassword = await bcrypt.compare(loginUserDto.password, existingUser.password);
+        const comparingPassword = await bcrypt.compare(
+            loginUserDto.password,
+            existingUser.password,
+        );
         if (!comparingPassword) {
             throw new UnauthorizedException(NOT_EQUALS_PASSWORD);
         }
         return existingUser;
     }
-    
+
     // 토큰발급
     signToken(user: Pick<User, 'email' | 'id'>, isRefreshToken: boolean) {
         const token = this.jwtService.sign(
@@ -67,12 +68,10 @@ export class AuthService {
         return token;
     }
 
-    
-
     // 토큰추출
     async extractToken(header: string, isBearer: boolean) {
         const splitToken = header.split(' ');
-        const prefix = isBearer ? 'Bearer' : 'Basic';
+        const prefix = isBearer ? 'Basic' : 'Bearer';
 
         if (splitToken.length !== 2 || splitToken[0] !== prefix) {
             throw new UnauthorizedException(INVALID_TOKEN);
@@ -81,10 +80,9 @@ export class AuthService {
         const token = splitToken[1];
         return token;
     }
-    
 
     // 토큰검증
-    verifyToken(rowToken: string) {
+    async verifyToken(rowToken: string) {
         try {
             const result = this.jwtService.verify(rowToken);
             return result;
@@ -119,8 +117,6 @@ export class AuthService {
             password,
         };
     }
-
-    
 
     // 토큰재발급
     rotateToken(rowToken: string, isRefresh: boolean) {
